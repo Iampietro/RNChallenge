@@ -9,7 +9,6 @@ import React, { useState, useEffect, useCallback, useRef  } from 'react';
 import {
   SafeAreaView,
   Text,
-  useColorScheme,
   View,
   Button,
 } from 'react-native';
@@ -35,21 +34,24 @@ const generateGrid = () => {
 const positions = [
   [0, 1], // right
   [0, -1], // left
-  [1, -1], // top left
+  [1, -1], // bottom left
   [-1, 1], // top right
-  [1, 1], // top
-  [-1, -1], // bottom
-  [1, 0], // bottom right
-  [-1, 0], // bottom left
+  [1, 1], // bottom right
+  [-1, -1], // top left
+  [1, 0], // bottom 
+  [-1, 0], // top
 ];
 
-// console.log(generateGrid())
 
 type Grid = number[][];
-// const initialState: Grid = [[]];
+
+const renderLineBreak = (index: number) => {
+  return index === 2
+    ? (<View style={{ width: '100%'}}></View>)
+    : '' 
+}
 
 function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
 
   const [grid, setGrid] = useState(() => {
     return generateGrid();
@@ -57,7 +59,7 @@ function App(): JSX.Element {
 
   const [running, setRunning] = useState(false);
   const runningRef = useRef(running);
-  runningRef.current = running;
+  runningRef.current = running; 
 
   const runSimulation = useCallback((grid: Grid) => {
     if (!runningRef.current) {
@@ -68,19 +70,22 @@ function App(): JSX.Element {
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        let neighbors = 0;
+        let aliveNeighbors = 0;
 
+        // We check the eight possible neighbors for each cell
         positions.forEach(([x, y]) => {
           const newI = i + x;
           const newJ = j + y;
 
           if (newI >= 0 && newI < rows && newJ >=0 && newJ < cols) {
-            neighbors += grid[newI][newJ]; 
+            aliveNeighbors += grid[newI][newJ]; 
           }
         })
-        if (neighbors < 2 || neighbors > 3) {
+
+        //We apply the rules
+        if (aliveNeighbors < 2 || aliveNeighbors > 3) {
           gridCopy[i][j] = 0;
-        } else if (grid[i][j] === 0 && neighbors === 3) {
+        } else if (grid[i][j] === 0 && aliveNeighbors === 3) {
           gridCopy[i][j] = 1;
         }
       }
@@ -99,25 +104,33 @@ function App(): JSX.Element {
       {grid &&
         grid.map((rows, i) => 
           rows.map((col, k) => (
-            <View style={[styles.cell, {backgroundColor: grid[i][k] ? "green" : undefined}]} 
-                  key={`${i}-${k}`}
-            >
-              <Text style={{ fontWeight: 'bold' }}>{
-                col ? '0' : 'X'
-              }</Text>
-            </View>
+            <React.Fragment key={`${i}-${k}`}>
+              <View style={[styles.cell, {backgroundColor: grid[i][k] ? "green" : undefined}]}>
+                <Text style={[styles.cellContent]}>{
+                  col ? '0' : 'X'
+                }</Text>
+              </View>
+              {renderLineBreak(k)}
+            </React.Fragment>
           ))
         )
       }
       </View>
       <Button
         title={running ? 'Stop' : 'Start'}
-        color="#f194ff"
+        color="#6197ed"
         onPress={() => {
           setRunning(!running);
             if (!running) {
               runningRef.current = true;
             }
+        }}
+      />
+      <Button
+        title='Reset'
+        color="#bf130a"
+        onPress={() => {
+          setGrid(generateGrid())
         }}
       />
     </SafeAreaView>

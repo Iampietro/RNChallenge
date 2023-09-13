@@ -1,4 +1,4 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
@@ -12,11 +12,14 @@ export default StyleSheet.create({
 		alignContent: 'center'
 	},
 	cell: {
-		width: 30,
-		height: 30,
+		width: 50,
+		height: 50,
 		borderWidth: 1,
 		borderColor: 'black',
 		alignItems: 'center',
 		justifyContent: 'center'
+	},
+	cellContent: {
+		fontWeight: 'bold'
 	}
 });
