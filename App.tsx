@@ -5,114 +5,123 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useState, useEffect, useCallback, useRef  } from 'react';
 import {
   SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
   Text,
   useColorScheme,
   View,
+  Button,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import styles from './styles';
+import useInterval from "./useInterval";
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const rows: number = 3;
+const cols: number = 3;
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+const generateGrid = () => {
+  const grid = [];
+  for (let i = 0; i < rows; i++) {
+    const row: number[] = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(Math.floor(Math.random() * 2))
+    }
+    grid.push(row)
+  }
+  return grid;
 }
+
+const positions = [
+  [0, 1], // right
+  [0, -1], // left
+  [1, -1], // top left
+  [-1, 1], // top right
+  [1, 1], // top
+  [-1, -1], // bottom
+  [1, 0], // bottom right
+  [-1, 0], // bottom left
+];
+
+// console.log(generateGrid())
+
+type Grid = number[][];
+// const initialState: Grid = [[]];
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  const [grid, setGrid] = useState(() => {
+    return generateGrid();
+  });
+
+  const [running, setRunning] = useState(false);
+  const runningRef = useRef(running);
+  runningRef.current = running;
+
+  const runSimulation = useCallback((grid: Grid) => {
+    if (!runningRef.current) {
+      return;
+    }
+
+    let gridCopy = JSON.parse(JSON.stringify(grid));
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        let neighbors = 0;
+
+        positions.forEach(([x, y]) => {
+          const newI = i + x;
+          const newJ = j + y;
+
+          if (newI >= 0 && newI < rows && newJ >=0 && newJ < cols) {
+            neighbors += grid[newI][newJ]; 
+          }
+        })
+        if (neighbors < 2 || neighbors > 3) {
+          gridCopy[i][j] = 0;
+        } else if (grid[i][j] === 0 && neighbors === 3) {
+          gridCopy[i][j] = 1;
+        }
+      }
+    }
+
+    setGrid(gridCopy);
+  }, [])
+
+  useInterval(() => {
+    runSimulation(grid);
+  }, 1000);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView style={[styles.container]}>
+      <View style={[styles.contentContainer]}>
+      {grid &&
+        grid.map((rows, i) => 
+          rows.map((col, k) => (
+            <View style={[styles.cell, {backgroundColor: grid[i][k] ? "green" : undefined}]} 
+                  key={`${i}-${k}`}
+            >
+              <Text style={{ fontWeight: 'bold' }}>{
+                col ? '0' : 'X'
+              }</Text>
+            </View>
+          ))
+        )
+      }
+      </View>
+      <Button
+        title={running ? 'Stop' : 'Start'}
+        color="#f194ff"
+        onPress={() => {
+          setRunning(!running);
+            if (!running) {
+              runningRef.current = true;
+            }
+        }}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits. Should be now
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
