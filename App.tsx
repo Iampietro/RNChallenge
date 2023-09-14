@@ -38,12 +38,6 @@ const positions = [
 
 type Grid = number[][];
 
-const renderLineBreak = (index: number) => {
-  return index === 2
-    ? (<View style={{ width: '100%'}}></View>)
-    : '' 
-}
-
 function App(): JSX.Element {
 
   const [grid, setGrid] = useState(() => {
@@ -97,14 +91,13 @@ function App(): JSX.Element {
       {grid &&
         grid.map((rows, i) => 
           rows.map((col, k) => (
-            <React.Fragment key={`${i}-${k}`}>
-              <View style={[styles.cell, {backgroundColor: grid[i][k] ? "green" : undefined}]}>
-                <Text style={[styles.cellContent]}>{
-                  col ? '0' : 'X'
-                }</Text>
-              </View>
-              {renderLineBreak(k)}
-            </React.Fragment>
+            <View style={[styles.cell, {backgroundColor: grid[i][k] ? "green" : undefined}]} 
+                  key={`${i}-${k}`}
+            >
+              <Text style={[styles.cellContent]}>{
+                col ? '0' : 'X'
+              }</Text>
+            </View>
           ))
         )
       }

@@ -3,13 +3,15 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center'
   },
 	contentContainer: {
 		flex:1,
 		flexWrap: 'wrap',
 		flexDirection: 'row',
-		justifyContent: 'center',
-		alignContent: 'center'
+		alignContent: 'center',
+		width: 150
 	},
 	cell: {
 		width: 50,
@@ -21,5 +23,8 @@ export default StyleSheet.create({
 	},
 	cellContent: {
 		fontWeight: 'bold'
+	},
+	btn: {
+		width: 200
 	}
 });
